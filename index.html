@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Сокращатель ссылок 2000</title>
+</head>
+<body>
+    <h2>Сократи свою ссылку!</h2>
+    <form action="/shorten" method="POST">
+        <input type="url" name="url" placeholder="Введите ссылку" required></input>
+        <button  type="submit" value="Submit">Сократить</button>
+    </form>
+
+    {{if .}}
+    <div class="result">
+        <a href="{{.}}" target="_blank">{{.}}</a>
+    </div>
+    {{end}}
+</body>
+</html>
