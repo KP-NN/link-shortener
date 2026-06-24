@@ -28,6 +28,29 @@ func randKey(url string) (string, error) {
 	return hex.EncodeToString(md5Hash.Sum(nil))[:8], nil
 }
 
+func addURL(url string) (string, error) {
+	key, err := randKey(url)
+
+	if err != nil {
+		return "", err
+	}
+
+	mu.Lock()
+	urlKeyMapping[key] = url
+	mu.Unlock()
+
+	return key, nil
+}
+
+func getURL(key string) (string, bool, error) {
+
+	mu.Lock()
+	url, ok := urlKeyMapping[key]
+	mu.Unlock()
+
+	return url, ok, nil
+}
+
 func shortenHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "method is not allowed", http.StatusMethodNotAllowed)
@@ -40,14 +63,11 @@ func shortenHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	key, err := randKey(url)
+	key, err := addURL(url)
 	if err != nil {
 		http.Error(w, "internal error", http.StatusInternalServerError)
+		return
 	}
-
-	mu.Lock()
-	urlKeyMapping[key] = url
-	mu.Unlock()
 
 	shortURL := fmt.Sprintf("%s/%s", publicAddress, key)
 
@@ -66,9 +86,11 @@ func rootHandler(w http.ResponseWriter, r *http.Request) {
 	paths := strings.Split(r.URL.Path, "/")
 	key := paths[len(paths)-1]
 
-	mu.Lock()
-	url, ok := urlKeyMapping[key]
-	mu.Unlock()
+	url, ok, err := getURL(key)
+	if err != nil {
+		http.Error(w, "internal error", http.StatusInternalServerError)
+		return
+	}
 
 	if !ok {
 		http.Error(w, "short key not found", http.StatusNotFound)
