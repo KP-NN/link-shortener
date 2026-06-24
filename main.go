@@ -102,10 +102,11 @@ func rootHandler(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 	port := flag.String("port", "8080", "server port")
-	publicAddress = *flag.String("host", "http://localhost:8080", "server host")
+	publicHost := flag.String("host", "http://localhost:8080", "server host")
 	flag.Parse()
 
 	host := fmt.Sprintf(":%s", *port)
+	publicAddress = *publicHost
 
 	urlKeyMapping = make(map[string]string)
 
